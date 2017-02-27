@@ -1,3 +1,7 @@
+## Libre Office Stuff
+.~lock.*
+~$*.ods
+
 ## Core latex/pdflatex auxiliary files:
 ## test
 *.aux
