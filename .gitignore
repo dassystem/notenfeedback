@@ -3,7 +3,6 @@
 ~$*.ods
 
 ## Core latex/pdflatex auxiliary files:
-## test
 *.aux
 *.lof
 *.log
