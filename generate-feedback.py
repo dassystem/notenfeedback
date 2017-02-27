@@ -2,13 +2,14 @@
 
 # Benoetigt: ezodf (python) und seine Abhaenigkeiten, Python3, pdflatex, pdfnup
 
-# Lauffaehig unter Linux.
+# Lauffaehig unter Linux und Windows.
 
 #Dieses Skript setzt aus einer Tabellenkalkulationsdatei ein LaTeX Dokument fuer Schuelerfeedback.
 #Zu benutzten mit "$ python generate-feedback.py [[DATEINAME.ods]]" Geschrieben von Adrian Salamon, 2016-08-26.
 
 import os
 import sys
+import platform
 
 input_datei = sys.argv[1]
 
@@ -21,7 +22,11 @@ sheet = doc.sheets['Notenrechnen']
 kursname = sheet['B1']
 
 latex_name="feedbackausgabe.tex"
-os.system("rm -f "+latex_name)
+
+if platform.system() == 'Linux': #Datei löschen Befehl Linux
+        os.system("rm -f "+latex_name)
+if platform.system() == 'Windows': #Datei löschen Befehl Windows
+        os.system("del "+latex_name)
 
 
 latex_pre ="""\\documentclass[a6paper,10pt]{scrartcl}
@@ -103,4 +108,8 @@ with open(latex_name, 'a') as latex_file:
 
 os.system ("pdflatex " + latex_name)
 os.system ("pdfnup feedbackausgabe.pdf --nup 4x2 --frame true --outfile print-feedback.pdf") #8 auf 1 drucken
-os.system ("rm -f *.aux *.synctex* *.log")		#pdflatex hilfsdateien entfernen
+if platform.system() == 'Linux': #Datei löschen Befehl Linux
+        os.system ("rm -f *.aux *.synctex* *.log")		#pdflatex hilfsdateien entfernen
+if platform.system() == 'Windows': #Datei löschen Befehl Windows
+        os.system ("del *.aux *.synctex* *.log")		#pdflatex hilfsdateien entfernen
+
