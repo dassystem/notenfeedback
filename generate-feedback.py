@@ -17,9 +17,9 @@ from ezodf import opendoc, Sheet
 doc = opendoc(input_datei)
 #for sheet in doc.sheets:
    #print(sheet.name)
-sheet = doc.sheets['Notenrechnen']
+notenuebersicht = doc.sheets['Notenuebersicht']
 
-kursname = sheet['B1']
+kursname = notenuebersicht['B1']
 
 latex_name="feedbackausgabe.tex"
 
@@ -52,48 +52,52 @@ latex_pre=latex_pre+str(kursname.value)+"""}
 latex_post ="""\\end{document}"""
 
 druck = ""
+
+zeitraumVon= notenuebersicht['C1']
+zeitraumBis= notenuebersicht['W1']
+
 for i in range (5,36):
-	susname = sheet['B'+str(i)] #Namen der Lernenden speichern
+	susname = notenuebersicht['B'+str(i)] #Namen der Lernenden speichern
 	if str(susname.value) != "0.0": #Wenn SuS einen Namen hat, dann mache weiter
 
     # Klausuren
-		klausur1 = sheet['D'+str(i)] 
+		klausur1 = notenuebersicht['D'+str(i)] 
 		klausur1wert = str(klausur1.value)
 		if klausur1wert == "None":
-			klausur1wert = "Keine Klausurnote"
+			klausur1wert = "Keine 1. Klausurnote"
 
-		klausur2 = sheet['E'+str(i)] 
+		klausur2 = notenuebersicht['E'+str(i)] 
 		klausur2wert = str(klausur2.value)
 		if klausur2wert == "None":
-			klausur2wert = "Keine Klausurnote"
+			klausur2wert = "Keine 2. Klausurnote"
 
-		klausur3 = sheet['E'+str(i)] 
+		klausur3 = notenuebersicht['E'+str(i)] 
 		klausur3wert = str(klausur3.value)
 		if klausur3wert == "None":
-			klausur3wert = "Keine Klausurnote"					
+			klausur3wert = "Keine 3. Klausurnote"					
 					
           
     # SoMi      
-		somiQ1 = sheet['H'+str(i)] 
+		somiQ1 = notenuebersicht['H'+str(i)] 
 		somiQ1Wert = str(somiQ1.value)
-		if somiQ1Wert == "#DIV/0!":
-			somiQ1Wert = "Keine SoMi-Note"
+		if somiQ1Wert == "None":
+			somiQ1Wert = "Keine SoMi-Note für Q1"
 
-		somiQ2 = sheet['I'+str(i)] 
+		somiQ2 = notenuebersicht['I'+str(i)] 
 		somiQ2Wert = str(somiQ2.value)
-		if somiQ2Wert == "#DIV/0!":
-			somiQ2Wert = "Keine SoMi-Note"
+		if somiQ2Wert == "None":
+			somiQ2Wert = "Keine SoMi-Note für Q2"
 		
     # Kommentar - Feedback		
 		kommQ1 = sheet['R'+str(i)] 
 		kommQ1Wert = str(kommQ1.value)
 		if kommQ1Wert == "None":
-			kommQ1Wert = "Kein Kommentar"
+			kommQ1Wert = "Kein Kommentar für Q1"
 			
-		kommQ2 = sheet['S'+str(i)]
+		kommQ2 = notenuebersicht['S'+str(i)]
 		kommQ2Wert = str(kommQ2.value)
 		if kommQ2Wert == "None":
-			kommQ2Wert = "Kein Kommentar"
+			kommQ2Wert = "Kein Kommentar für Q2"
 			
       
       			
