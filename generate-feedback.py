@@ -1,15 +1,25 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # Benoetigt: ezodf (python) und seine Abhaenigkeiten, Python3, pdflatex, pdfnup
 
 # Lauffaehig unter Linux und Windows.
 
-#Dieses Skript setzt aus einer Tabellenkalkulationsdatei ein LaTeX Dokument fuer Schuelerfeedback.
-#Zu benutzten mit "$ python generate-feedback.py [[DATEINAME.ods]]" Geschrieben von Adrian Salamon, 2016-08-26.
+# Dieses Skript setzt aus einer Tabellenkalkulationsdatei ein LaTeX Dokument fuer Schuelerfeedback.
+# Zu benutzten mit "$ python generate-feedback.py [[DATEINAME.ods]]"
+
+# Geschrieben von Adrian Salamon, 2016-08-26.
 
 import os
 import sys
 import platform
+import datetime
+
+
+# # # # # # # # # # # # # # # # # #
+#
+# Inputfile verarbeiten und Sheets anlegen
+#
+# # # # # # # # # # # # # # # # # #
 
 input_datei = sys.argv[1]
 
@@ -18,8 +28,22 @@ doc = opendoc(input_datei)
 #for sheet in doc.sheets:
    #print(sheet.name)
 notenuebersicht = doc.sheets['Notenuebersicht']
+somiListe       = doc.sheets['SoMi-Liste']
+settings        = doc.sheets['Kursliste-Settings']
 
-kursname = notenuebersicht['B1']
+
+# # # # # # # # # # # # # # # # # #
+#
+# Metadaten des Kurses und Abschnittes einlesen
+#
+# # # # # # # # # # # # # # # # # #
+
+kursname      = notenuebersicht['B1']
+lehrkraftName = settings['C1']
+zeitraumVon   = somiListe['C1']
+zeitraumBis   = somiListe['W1']
+
+
 
 latex_name="feedbackausgabe.tex"
 
@@ -45,20 +69,30 @@ latex_pre ="""\\documentclass[a6paper,10pt]{scrartcl}
 
 latex_pre=latex_pre+str(kursname.value)+"""}
 \\chead{}
+\\ohead{"""
+latex_pre=latex_pre+datetime.datetime.strptime(\
+str(zeitraumVon.value), '%Y-%m-%d').strftime('%d.%m.%Y') + \
+" bis " + datetime.datetime.strptime(\
+str(zeitraumBis.value), '%Y-%m-%d').strftime('%d.%m.%Y') + """}
+
+
 \\pagestyle{scrheadings}
 
 \\begin{document}\n\n"""
 
 latex_post ="""\\end{document}"""
 
+
+# # # # # # # # # # # # # # # # # #
+#
+# Daten der Lernenden einlesen und verabeiten
+#
+# # # # # # # # # # # # # # # # # #
+
 druck = ""
-
-zeitraumVon= notenuebersicht['C1']
-zeitraumBis= notenuebersicht['W1']
-
 for i in range (5,36):
-	susname = notenuebersicht['B'+str(i)] #Namen der Lernenden speichern
-	if str(susname.value) != "0.0": #Wenn SuS einen Namen hat, dann mache weiter
+	lernerName = notenuebersicht['B'+str(i)] #Namen der Lernenden speichern
+	if str(lernerName.value) != "0.0": #Wenn SuS einen Namen hat, dann mache weiter
 
     # Klausuren
 		klausur1 = notenuebersicht['D'+str(i)] 
@@ -89,7 +123,7 @@ for i in range (5,36):
 			somiQ2Wert = "Keine SoMi-Note für Q2"
 		
     # Kommentar - Feedback		
-		kommQ1 = sheet['R'+str(i)] 
+		kommQ1 = notenuebersicht['R'+str(i)] 
 		kommQ1Wert = str(kommQ1.value)
 		if kommQ1Wert == "None":
 			kommQ1Wert = "Kein Kommentar für Q1"
@@ -101,8 +135,13 @@ for i in range (5,36):
 			
       
       			
-		druck = druck + "\\section*{"+ str(susname.value) +"} \\begin{tabularx}{\\textwidth}{lX}\n Klausurnote: &"+str(klausur1wert) + "\\\\\n SoMi-Q1: &" +str(somiQ1Wert) + "\\\\\n Kommentar: &"+kommQ1Wert +"\\end{tabularx}\n\n \\vfill Salamon, \\today\n \clearpage" +"\n \n \n"
+		druck = druck + "\\section*{"+ str(lernerName.value) +"} \\begin{tabularx}{\\textwidth}{lX}\n Klausurnote: &"+str(klausur1wert) + "\\\\\n SoMi-Q1: &" +str(somiQ1Wert) + "\\\\\n Kommentar: &"+kommQ1Wert +"\\end{tabularx}\n\n \\vfill " + str(lehrkraftName.value) + ", \\today\n \clearpage" +"\n \n \n"
 
+# # # # # # # # # # # # # # # # # #
+#
+# LaTeX aufruf für gesamtes PDF
+#
+# # # # # # # # # # # # # # # # # #
 
 with open(latex_name, 'a') as latex_file:
 		latex_file.write(latex_pre)
@@ -112,8 +151,8 @@ with open(latex_name, 'a') as latex_file:
 
 os.system ("pdflatex " + latex_name)
 os.system ("pdfnup feedbackausgabe.pdf --nup 4x2 --frame true --outfile print-feedback.pdf") #8 auf 1 drucken
-if platform.system() == 'Linux': #Datei löschen Befehl Linux
-        os.system ("rm -f *.aux *.synctex* *.log")		#pdflatex hilfsdateien entfernen
-if platform.system() == 'Windows': #Datei löschen Befehl Windows
-        os.system ("del *.aux *.synctex* *.log")		#pdflatex hilfsdateien entfernen
+if platform.system() == 'Linux':                  #Datei löschen Befehl Linux
+        os.system ("rm -f *.aux *.synctex* *.log")#pdflatex hilfsdateien entfernen
+if platform.system() == 'Windows':                #Datei löschen Befehl Windows
+        os.system ("del *.aux *.synctex* *.log")	#pdflatex hilfsdateien entfernen
 
