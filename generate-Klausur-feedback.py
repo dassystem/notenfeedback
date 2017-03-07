@@ -70,7 +70,7 @@ latex_pre ="""\\documentclass[a6paper,10pt]{scrartcl}
 
 latex_pre=latex_pre+str(kursname.value)+"""}
 \\chead{}
-\\ohead{"""
+\\ohead{Klausur vom """
 latex_pre=latex_pre+datetime.datetime.strptime(\
 str(datum.value), '%Y-%m-%d').strftime('%d.%m.%Y') + """}
 
@@ -80,7 +80,7 @@ str(datum.value), '%Y-%m-%d').strftime('%d.%m.%Y') + """}
 \\begin{document}\n\n"""
 
 # Notenspiegel
-notenspiegel = """Notenspiegel:\n
+notenspiegel = """\\subsection*{Notenspiegel}\n\n
 \\begin{tabular}{c|c|c|c|c|c}
 \\quad 1 \\quad & \\quad 2 \\quad & \\quad 3 \\quad & \\quad 4 \\quad & \\quad 5 \\quad & \\quad 6 \\quad\\\\\\hline"""
 notenspiegel=notenspiegel+  str(klausurergebnis['B9'].value) + " & "
@@ -106,7 +106,7 @@ latex_post ="""\\end{document}"""
 druck = ""
 for i in range (12,51):
 	lernerName = klausurergebnis['A'+str(i)] #Namen der Lernenden speichern
-	if str(lernerName.value) != "0.0": #Wenn SuS einen Namen hat, dann mache weiter
+	if str(lernerName.value) != "None": #Wenn SuS einen Namen hat, dann mache weiter
 
         # Klausurergebnis
 		note = klausurergebnis['B'+str(i)] 
@@ -129,7 +129,7 @@ for i in range (12,51):
 		if kommWert == "None":
 			kommWert = "Kein Kommentar"
 	
-		druck = druck +"\\section*{"+ str(lernerName.value) +"} \\begin{tabularx}{\\textwidth}{lX}\n Klausurnote: &"
+		druck = druck +"\\section*{"+ str(lernerName.value) +"} \\begin{tabularx}{\\textwidth}{lX}\n Lernfeld(er): &" + str(klausurergebnis['B6'].value)+ "\\\\ \n Klausurnote: &"
 		druck = druck +str(notenWert) +"\\\\\n Erreichte Punkte: &" +str(punkteWert) +" von " +str(klausurergebnis['C11'].value)
 		druck = druck +"\\\\\n Kommentar: &"+kommWert
 		druck = druck +"\\end{tabularx}\n\n \\vfill " 
