@@ -14,6 +14,18 @@ import sys
 import platform
 import datetime
 
+# # # # # # # # # # # # # # # # # #
+#
+# String in Excel-Spalte finden
+#
+# # # # # # # # # # # # # # # # # #
+
+def findString(myString, myTabelle, myXlsSpalte, rangeTo, rangeFrom=0):
+        for i in range(rangeFrom, rangeTo):
+                if str(myTabelle[str(myXlsSpalte)+str(i)].value)==myString:
+                        return i
+        return 0
+         
 
 # # # # # # # # # # # # # # # # # #
 #
@@ -39,9 +51,13 @@ klausurergebnis = doc.sheets['Klausurergebnis']
 #
 # # # # # # # # # # # # # # # # # #
 
-kursname      = klausurergebnis['B3']
-lehrkraftName = klausurergebnis['B4']
-datum   = klausurergebnis['B5']
+kursname        = klausurergebnis['B'+str(findString("Kursname:", klausurergebnis, 'A', 10))]
+lehrkraftName   = klausurergebnis['B'+str(findString("Dozent:", klausurergebnis, 'A', 10))]
+klausurdatum    = klausurergebnis['B'+str(findString("Datum:", klausurergebnis, 'A', 10))]
+lernfeld        = klausurergebnis['B'+str(findString("Lernfeld:", klausurergebnis, 'A', 10))]
+teilnehmer      = klausurergebnis['B'+str(findString("Teilnehmer:", klausurergebnis, 'A', 10))]
+maximalpunkte   = klausurergebnis['B'+str(findString("Maximalpunkte:", klausurergebnis, 'A', 10))]
+durchschnittsnote = klausurergebnis['B'+str(findString("Durchschnittsnote:", klausurergebnis, 'A', 10))]
 #zeitraumBis   = somiListe['W1']
 
 
@@ -53,6 +69,12 @@ if platform.system() == 'Linux': #Datei löschen Befehl Linux
 if platform.system() == 'Windows': #Datei löschen Befehl Windows
         os.system("del "+latex_name)
 
+
+# # # # # # # # # # # # # # # # # #
+#
+# Latex Präambel
+#
+# # # # # # # # # # # # # # # # # #
 
 latex_pre ="""\\documentclass[a6paper,10pt]{scrartcl}
 \\usepackage{tabularx}
@@ -72,27 +94,50 @@ latex_pre=latex_pre+str(kursname.value)+"""}
 \\chead{}
 \\ohead{Klausur vom """
 latex_pre=latex_pre+datetime.datetime.strptime(\
-str(datum.value), '%Y-%m-%d').strftime('%d.%m.%Y') + """}
-
+str(klausurdatum.value), '%Y-%m-%d').strftime('%d.%m.%Y') + """}
 
 \\pagestyle{scrheadings}
 
 \\begin{document}\n\n"""
 
+
+# # # # # # # # # # # # # # # # # #
+#
 # Notenspiegel
-notenspiegel = """\\subsection*{Notenspiegel}\n\n
-\\begin{tabular}{c|c|c|c|c|c}
-\\quad 1 \\quad & \\quad 2 \\quad & \\quad 3 \\quad & \\quad 4 \\quad & \\quad 5 \\quad & \\quad 6 \\quad\\\\\\hline"""
-notenspiegel=notenspiegel+  str(klausurergebnis['B9'].value) + " & "
-notenspiegel=notenspiegel+  str(klausurergebnis['C9'].value) + " & "
-notenspiegel=notenspiegel+  str(klausurergebnis['D9'].value) + " & "
-notenspiegel=notenspiegel+  str(klausurergebnis['E9'].value) + " & "
-notenspiegel=notenspiegel+  str(klausurergebnis['F9'].value) + " & "
-notenspiegel=notenspiegel+  str(klausurergebnis['G9'].value) + """ \\\\
-\end{tabular}
+#
+# # # # # # # # # # # # # # # # # #
+
+notenspiegelZeile = findString("Notenspiegel:", klausurergebnis, 'A', 10)
+
+notenspiegel = """\n\\subsection*{Notenspiegel}\n
+\\begin{center}
+\\begin{tabularx}{\\linewidth}{|@{} *6{>{\\centering\\arraybackslash}X|}@{}}
+ 1 & 2 & 3 & 4 & 5 & 6 \\\\\\hline\n"""
+notenspiegel = notenspiegel +  str(klausurergebnis['B'+str(notenspiegelZeile+1)].value) + " & "
+notenspiegel = notenspiegel +  str(klausurergebnis['C'+str(notenspiegelZeile+1)].value) + " & "
+notenspiegel = notenspiegel +  str(klausurergebnis['D'+str(notenspiegelZeile+1)].value) + " & "
+notenspiegel = notenspiegel +  str(klausurergebnis['E'+str(notenspiegelZeile+1)].value) + " & "
+notenspiegel = notenspiegel +  str(klausurergebnis['F'+str(notenspiegelZeile+1)].value) + " & "
+notenspiegel = notenspiegel +  str(klausurergebnis['G'+str(notenspiegelZeile+1)].value) + """ \\\\
+\\end{tabularx}
+\\end{center}
+
+\\begin{tabularx}{\\linewidth}{lX}
+"""
+
+notenspiegel = notenspiegel + "Teilnehmer: &" + str(teilnehmer.value)+ "\\\\ \n"
+notenspiegel = notenspiegel + "Durchschnittsnote: &"+str(durchschnittsnote.value) +"\n"
+notenspiegel = notenspiegel + """
+\\end{tabularx}\n\n 
 
 """
 
+
+# # # # # # # # # # # # # # # # # #
+#
+# LaTeX-Dokumentabschluss
+#
+# # # # # # # # # # # # # # # # # #
 
 latex_post ="""\\end{document}"""
 
@@ -129,10 +174,10 @@ for i in range (12,51):
 		if kommWert == "None":
 			kommWert = "Kein Kommentar"
 	
-		druck = druck +"\\section*{"+ str(lernerName.value) +"} \\begin{tabularx}{\\textwidth}{lX}\n Lernfeld(er): &" + str(klausurergebnis['B6'].value)+ "\\\\ \n Klausurnote: &"
-		druck = druck +str(notenWert) +"\\\\\n Erreichte Punkte: &" +str(punkteWert) +" von " +str(klausurergebnis['C11'].value)
+		druck = druck +"\\section*{"+ str(lernerName.value) +"} \n\\begin{tabularx}{\\linewidth}{lX}\n Lernfeld(er): &" + str(lernfeld.value)+ "\\\\ \n Klausurnote: &"
+		druck = druck +str(notenWert) +"\\\\\n Erreichte Punkte: &" +str(punkteWert) +" von " +str(maximalpunkte.value)
 		druck = druck +"\\\\\n Kommentar: &"+kommWert
-		druck = druck +"\\end{tabularx}\n\n \\vfill " 
+		druck = druck +"\n\\end{tabularx}\n\n \\vfill " 
 
 		druck = druck + notenspiegel + "\n\n \\vfill " + str(lehrkraftName.value) +", \\today\n \clearpage" +"\n \n \n"
 # # # # # # # # # # # # # # # # # #
